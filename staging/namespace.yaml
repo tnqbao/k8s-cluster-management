@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bao-production-env
+  labels:
+    app: bao-platform
+    env: production
+---
