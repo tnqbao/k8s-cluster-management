@@ -13,6 +13,7 @@ spec:
       labels:
         app: postgres
     spec:
+      terminationGracePeriodSeconds: 60
       containers:
         - name: postgres
           image: postgres:15
@@ -21,6 +22,10 @@ spec:
                 name: bao-${DEPLOY_ENV}-config
             - secretRef:
                 name: bao-${DEPLOY_ENV}-secret
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 10"]
           resources:
             requests:
               cpu: "0.5"
@@ -28,7 +33,6 @@ spec:
             limits:
               cpu: "1"
               memory: "1Gi"
-
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -45,14 +49,19 @@ spec:
       labels:
         app: pgpool
     spec:
+      terminationGracePeriodSeconds: 60
       containers:
         - name: pgpool
-          image: bitnami/pgpool:latest
+          image: bitnami/pgpool:4.6.2-debian-12-r4
           envFrom:
             - configMapRef:
                 name: bao-${DEPLOY_ENV}-config
             - secretRef:
                 name: bao-${DEPLOY_ENV}-secret
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 10"]
           resources:
             requests:
               cpu: "0.3"
@@ -60,4 +69,3 @@ spec:
             limits:
               cpu: "0.5"
               memory: "512Mi"
----
