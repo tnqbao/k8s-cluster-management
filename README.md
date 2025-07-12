@@ -84,14 +84,6 @@ Các module sử dụng thư mục `template/` chứa các file YAML có chứa 
 
 ---
 
-## Lưu ý | Notes
-
-* Namespace của `staging` và `production` hiện đang giống nhau (`bao-production-env`) – cần đảm bảo namespace khác biệt nếu triển khai song song.
-* Các file `.env` cần được cấu hình kỹ trước khi apply để tránh lỗi runtime.
-* Module PostgreSQL hiện chưa sử dụng Persistent Volume – nên bổ sung nếu cần lưu dữ liệu lâu dài.
-
----
-
 ## Phụ thuộc | Dependencies
 
 * `kubectl`
