@@ -5,7 +5,7 @@ metadata:
   namespace: bao-${DEPLOY_ENV}-env
 spec:
   selector:
-    app: postgres
+    app: postgres-service
   ports:
     - name: postgres
       port: 5432
@@ -19,7 +19,7 @@ metadata:
   namespace: bao-${DEPLOY_ENV}-env
 spec:
   selector:
-    app: pgpool
+    app: pgpool-service
   ports:
     - name: pgpool
       port: 5432

@@ -1,19 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: postgres
+  name: postgres-deployment
   namespace: bao-${DEPLOY_ENV}-env
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: postgres
+      app: postgres-service
   template:
     metadata:
       labels:
-        app: postgres
+        app: postgres-service
     spec:
-      terminationGracePeriodSeconds: 60
       containers:
         - name: postgres
           image: postgres:15
@@ -22,10 +21,6 @@ spec:
                 name: bao-${DEPLOY_ENV}-config
             - secretRef:
                 name: bao-${DEPLOY_ENV}-secret
-          lifecycle:
-            preStop:
-              exec:
-                command: ["sh", "-c", "sleep 10"]
           resources:
             requests:
               cpu: "0.5"
@@ -33,35 +28,39 @@ spec:
             limits:
               cpu: "1"
               memory: "1Gi"
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+
+
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: pgpool
+  name: pgpool-deployment
   namespace: bao-${DEPLOY_ENV}-env
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: pgpool
+      app: pgpool-service
   template:
     metadata:
       labels:
-        app: pgpool
+        app: pgpool-service
     spec:
-      terminationGracePeriodSeconds: 60
       containers:
         - name: pgpool
-          image: bitnami/pgpool:4.6.2-debian-12-r4
+          image: bitnami/pgpool:latest
           envFrom:
             - configMapRef:
                 name: bao-${DEPLOY_ENV}-config
             - secretRef:
                 name: bao-${DEPLOY_ENV}-secret
-          lifecycle:
-            preStop:
-              exec:
-                command: ["sh", "-c", "sleep 10"]
           resources:
             requests:
               cpu: "0.3"
@@ -69,3 +68,4 @@ spec:
             limits:
               cpu: "0.5"
               memory: "512Mi"
+---
