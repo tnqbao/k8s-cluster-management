@@ -1,3 +1,6 @@
+# =============================
+# Deployment: PostgreSQL
+# =============================
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,6 +19,11 @@ spec:
       containers:
         - name: postgres
           image: postgres:15
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_INITDB_ARGS
+              value: "--auth=trust"
           envFrom:
             - configMapRef:
                 name: bao-${DEPLOY_ENV}-config
@@ -36,7 +44,6 @@ spec:
           persistentVolumeClaim:
             claimName: postgres-pvc
 
-
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -55,7 +62,33 @@ spec:
     spec:
       containers:
         - name: pgpool
-          image: bitnami/pgpool:latest
+          image: bitnami/pgpool:4.5.2
+          env:
+            - name: PGPOOL_BACKEND_NODES
+              valueFrom:
+                configMapKeyRef:
+                  name: bao-${DEPLOY_ENV}-config
+                  key: PGPOOL_BACKEND_NODES
+            - name: PGPOOL_ENABLE_POOL_HBA
+              value: "yes"
+            - name: PGPOOL_ALLOW_CLEAR_TEXT_FRONTEND_AUTH
+              value: "yes"
+            - name: PGPOOL_LOAD_BALANCE_MODE
+              value: "off"
+            - name: PGPOOL_CONNECTION_CACHE
+              value: "on"
+            - name: PGPOOL_POSTGRES_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: bao-${DEPLOY_ENV}-config
+                  key: POSTGRES_USER
+            - name: PGPOOL_POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: bao-${DEPLOY_ENV}-secret
+                  key: POSTGRES_PASSWORD
+            - name: BITNAMI_DEBUG
+              value: "true"
           envFrom:
             - configMapRef:
                 name: bao-${DEPLOY_ENV}-config
@@ -68,4 +101,3 @@ spec:
             limits:
               cpu: "0.5"
               memory: "512Mi"
----
