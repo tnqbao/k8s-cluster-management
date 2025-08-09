@@ -10,7 +10,9 @@ spec:
     - name: postgres
       port: 5432
       targetPort: 5432
-  type: ClusterIP
+      nodePort: 35432
+      protocol: TCP
+  type: NodePort
 ---
 apiVersion: v1
 kind: Service
