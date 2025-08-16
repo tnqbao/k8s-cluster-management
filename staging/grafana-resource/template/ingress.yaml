@@ -4,7 +4,7 @@ metadata:
   name: grafana-otel-lgtm-ingress
   namespace: bao-${DEPLOY_ENV}-env
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
   rules:
     - host: "${DOMAIN_NAME}"
@@ -17,3 +17,4 @@ spec:
                 name: grafana-otel-lgtm-service
                 port:
                   number: 3000
+
