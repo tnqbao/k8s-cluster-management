@@ -2,11 +2,11 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: grafana-pvc
-  namespace: bao-${DEPLOY_ENV}-env
+  namespace: bao-staging-env
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
-  storageClassName: standard
+      storage: 5Gi
+  storageClassName: local-path
