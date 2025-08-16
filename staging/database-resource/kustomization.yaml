@@ -7,4 +7,3 @@ resources:
   - ./base/service.yaml
   - ./base/hpa.yaml
   - ./base/pvc.yaml
-  - ./base/pgpool-custom-configmap.yaml
