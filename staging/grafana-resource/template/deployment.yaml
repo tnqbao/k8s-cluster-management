@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bao-grafana-otel-lgtm
+  namespace: bao-${DEPLOY_ENV}-env
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana-otel-lgtm-service
+  template:
+    metadata:
+      labels:
+        app: grafana-otel-lgtm-service
+    spec:
+      containers:
+        - name: grafana-otel-lgtm-service
+          image: grafana/otel-lgtm:latest
+          ports:
+            - containerPort: 3000
+            - containerPort: 4317
+            - containerPort: 4318
+          envFrom:
+            - configMapRef:
+                name: bao-grafana-${DEPLOY_ENV}-config
+            - secretRef:
+                name: bao-grafana-${DEPLOY_ENV}-secret
+          volumeMounts:
+            - name: grafana-storage
+              mountPath: /data
+          resources:
+            requests:
+              cpu: "0.3"
+              memory: "500Mi"
+            limits:
+              cpu: "0.5"
+              memory: "1Gi"
+      volumes:
+        - name: grafana-storage
+          persistentVolumeClaim:
+            claimName: grafana-pvc

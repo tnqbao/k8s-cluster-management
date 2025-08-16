@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-otel-lgtm-service
+  namespace: bao-${DEPLOY_ENV}-env
+spec:
+  ports:
+    - port: 80
+      targetPort: 3000
+    - port: 4317
+      targetPort: 4317
+    - port: 4318
+      targetPort: 4318
+  selector:
+    app: grafana-otel-lgtm
