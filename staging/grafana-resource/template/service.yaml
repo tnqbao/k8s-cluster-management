@@ -5,11 +5,14 @@ metadata:
   namespace: bao-${DEPLOY_ENV}-env
 spec:
   ports:
-    - port: 80
+    - name: grafana
+      port: 80
       targetPort: 3000
-    - port: 4317
+    - name: otel-collector
+      port: 4317
       targetPort: 4317
-    - port: 4318
+    - name: otel-collector-grpc
+      port: 4318
       targetPort: 4318
   selector:
     app: grafana-otel-lgtm-service
