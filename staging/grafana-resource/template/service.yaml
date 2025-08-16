@@ -12,4 +12,4 @@ spec:
     - port: 4318
       targetPort: 4318
   selector:
-    app: grafana-otel-lgtm
+    app: grafana-otel-lgtm-service
