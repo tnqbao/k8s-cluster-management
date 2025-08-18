@@ -8,11 +8,14 @@ spec:
     - name: grafana
       port: 3000
       targetPort: 3000
+      nodePort: 30300
     - name: otel-collector
       port: 4317
       targetPort: 4317
+      nodePort: 30417
     - name: otel-collector-grpc
       port: 4318
       targetPort: 4318
+      nodePort: 30418
   selector:
     app: grafana-otel-lgtm-service
