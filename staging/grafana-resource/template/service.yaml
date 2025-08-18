@@ -19,3 +19,4 @@ spec:
       nodePort: 30418
   selector:
     app: grafana-otel-lgtm-service
+  type: NodePort
