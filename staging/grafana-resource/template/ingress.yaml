@@ -3,8 +3,8 @@ kind: Ingress
 metadata:
   name: grafana-otel-lgtm-ingress
   namespace: bao-${DEPLOY_ENV}-env
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web
+#  annotations:
+#    traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
   rules:
     - host: "${DOMAIN_NAME}"
