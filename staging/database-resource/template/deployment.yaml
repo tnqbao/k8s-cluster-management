@@ -59,7 +59,7 @@ spec:
     spec:
       containers:
         - name: pgpool
-          image: bitnami/pgpool:latest
+          image: ghcr.io/bitnami/pgpool:latest
           env:
             - name: PGPOOL_BACKEND_NODES
               valueFrom:
