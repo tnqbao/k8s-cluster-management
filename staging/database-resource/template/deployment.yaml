@@ -59,7 +59,8 @@ spec:
     spec:
       containers:
         - name: pgpool
-          image: ghcr.io/bitnami/pgpool:latest
+          image: bitnami/pgpool:4.5.2
+          imagePullPolicy: IfNotPresent
           env:
             - name: PGPOOL_BACKEND_NODES
               valueFrom:
