@@ -1,10 +1,10 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: grafana-otel-lgtm-ingress
+  name: grafana-ui-ingress
   namespace: bao-${DEPLOY_ENV}-env
-#  annotations:
-#    traefik.ingress.kubernetes.io/router.entrypoints: web
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
   rules:
     - host: "${DOMAIN_NAME}"
@@ -17,4 +17,23 @@ spec:
                 name: grafana-otel-lgtm-service
                 port:
                   number: 3000
-
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-otel-api-ingress
+  namespace: bao-${DEPLOY_ENV}-env
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  rules:
+    - host: "${API_NAME}"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana-otel-lgtm-service
+                port:
+                  number: 4318

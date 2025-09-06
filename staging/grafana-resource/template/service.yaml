@@ -4,19 +4,16 @@ metadata:
   name: grafana-otel-lgtm-service
   namespace: bao-${DEPLOY_ENV}-env
 spec:
+  selector:
+    app: grafana-otel-lgtm-service
   ports:
     - name: grafana
       port: 3000
       targetPort: 3000
-      nodePort: 30300
-    - name: otel-collector
+    - name: otel-collector-grpc
       port: 4317
       targetPort: 4317
-      nodePort: 30417
-    - name: otel-collector-grpc
+    - name: otel-collector-http
       port: 4318
       targetPort: 4318
-      nodePort: 30418
-  selector:
-    app: grafana-otel-lgtm-service
-  type: NodePort
+  type: ClusterIP
