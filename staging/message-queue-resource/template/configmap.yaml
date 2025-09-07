@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bao-rabbitmq-${DEPLOY_ENV}-config
+  namespace: bao-${DEPLOY_ENV}-env
+data:
+  RABBITMQ_DEFAULT_VHOST: "/"
+  RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+  RABBITMQ_DEFAULT_USER: "admin"
+  RABBITMQ_NODENAME: "rabbit@localhost"
+  RABBITMQ_USE_LONGNAME: "false"
+
