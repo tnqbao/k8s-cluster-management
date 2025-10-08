@@ -1,0 +1,80 @@
+# Production environment specific values
+environment: production
+
+global:
+  namespace: bao-production-env
+
+# Database configuration for production
+database:
+  postgres:
+    auth:
+      postgresPassword: "${POSTGRES_PASSWORD}"
+      database: "${POSTGRES_DB}"
+      username: "${POSTGRES_USER}"
+    persistence:
+      size: 50Gi  # Larger for production
+    resources:
+      requests:
+        cpu: "0.5"
+        memory: "1Gi"
+      limits:
+        cpu: "1"
+        memory: "2Gi"
+  pgpool:
+    replicaCount: 2  # HA for production
+    backendNodes: "${PGPOOL_BACKEND_NODES}"
+
+# Grafana configuration for production
+grafana:
+  replicaCount: 2  # HA for production
+  auth:
+    adminUser: "${GF_SECURITY_ADMIN_USER}"
+    adminPassword: "${GF_SECURITY_ADMIN_PASSWORD}"
+  config:
+    enableLogsGrafana: "${ENABLE_LOGS_GRAFANA}"
+    enableLogsLoki: "${ENABLE_LOGS_LOKI}"
+    enableLogsPrometheus: "${ENABLE_LOGS_PROMETHEUS}"
+    enableLogsTempo: "${ENABLE_LOGS_TEMPO}"
+    enableLogsPyroscope: "${ENABLE_LOGS_PYROSCOPE}"
+    enableLogsOtelcol: "${ENABLE_LOGS_OTELCOL}"
+    serverRootUrl: "${GF_SERVER_ROOT_URL}"
+    serverDomain: "${GF_SERVER_DOMAIN}"
+  persistence:
+    size: 20Gi  # Larger for production
+  resources:
+    requests:
+      cpu: "0.5"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+  ingress:
+    hosts:
+      - host: "${DOMAIN_NAME}"
+        paths:
+          - path: /
+            pathType: Prefix
+
+# Message Queue configuration for production
+messageQueue:
+  rabbitmq:
+    auth:
+      username: "${RABBITMQ_DEFAULT_USER}"
+      password: "${RABBITMQ_DEFAULT_PASS}"
+      erlangCookie: "${RABBITMQ_ERLANG_COOKIE}"
+    config:
+      defaultVhost: "/"
+      vmMemoryHighWatermark: "0.6"
+      diskFreeLimit: "5GB"
+      extraEnvVars:
+        RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbit log_levels [{connection,error},{default,warning}]"
+        RABBITMQ_CLUSTER_FORMATION_RANDOMIZED_STARTUP_DELAY_RANGE: "30"
+    persistence:
+      size: 20Gi  # Larger for production
+    resources:
+      requests:
+        cpu: "0.5"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"

@@ -1,0 +1,74 @@
+{{- if .Values.grafana.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bao-grafana-otel-lgtm
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: grafana-otel-lgtm-service
+    {{- include "bao-application.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.grafana.replicaCount }}
+  selector:
+    matchLabels:
+      app: grafana-otel-lgtm-service
+  template:
+    metadata:
+      labels:
+        app: grafana-otel-lgtm-service
+    spec:
+      containers:
+        - name: grafana-otel-lgtm-service
+          image: {{ .Values.grafana.image.repository }}:{{ .Values.grafana.image.tag }}
+          imagePullPolicy: {{ .Values.grafana.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.grafana.ports.grafana }}
+              name: grafana
+            - containerPort: {{ .Values.grafana.ports.otel_grpc }}
+              name: otel-grpc
+            - containerPort: {{ .Values.grafana.ports.otel_http }}
+              name: otel-http
+          env:
+            # Grafana Admin Configuration
+            - name: GF_SECURITY_ADMIN_USER
+              value: {{ .Values.grafana.auth.adminUser | default "admin" | quote }}
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: {{ .Values.grafana.auth.adminPassword | default "admin" | quote }}
+            # Grafana Server Configuration
+            - name: GF_SERVER_ROOT_URL
+              value: {{ .Values.grafana.config.serverRootUrl | default "http://localhost:3000/" | quote }}
+            - name: GF_SERVER_DOMAIN
+              value: {{ .Values.grafana.config.serverDomain | default "localhost" | quote }}
+            # OTEL LGTM Logs Configuration
+            - name: ENABLE_LOGS_GRAFANA
+              value: {{ .Values.grafana.config.enableLogsGrafana | default "true" | quote }}
+            - name: ENABLE_LOGS_LOKI
+              value: {{ .Values.grafana.config.enableLogsLoki | default "true" | quote }}
+            - name: ENABLE_LOGS_PROMETHEUS
+              value: {{ .Values.grafana.config.enableLogsPrometheus | default "false" | quote }}
+            - name: ENABLE_LOGS_TEMPO
+              value: {{ .Values.grafana.config.enableLogsTempo | default "false" | quote }}
+            - name: ENABLE_LOGS_PYROSCOPE
+              value: {{ .Values.grafana.config.enableLogsPyroscope | default "false" | quote }}
+            - name: ENABLE_LOGS_OTELCOL
+              value: {{ .Values.grafana.config.enableLogsOtelcol | default "true" | quote }}
+            # Domain Configuration
+            - name: DOMAIN_NAME
+              value: {{ .Values.grafana.config.serverDomain | default "localhost" | quote }}
+            # Environment
+            - name: DEPLOY_ENV
+              value: {{ .Values.environment | quote }}
+          volumeMounts:
+            {{- if .Values.grafana.persistence.enabled }}
+            - name: grafana-storage
+              mountPath: /data
+            {{- end }}
+          resources:
+            {{- toYaml .Values.grafana.resources | nindent 12 }}
+      volumes:
+        {{- if .Values.grafana.persistence.enabled }}
+        - name: grafana-storage
+          persistentVolumeClaim:
+            claimName: grafana-pvc
+        {{- end }}
+{{- end }}

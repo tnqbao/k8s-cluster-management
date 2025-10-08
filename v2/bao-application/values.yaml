@@ -1,0 +1,139 @@
+# Global configuration
+global:
+  imageRegistry: ""
+  storageClass: ""
+  namespace: ""
+
+# Environment-specific configuration
+environment: staging # staging or production
+
+# Common labels
+commonLabels:
+  app.kubernetes.io/managed-by: helm
+  app.kubernetes.io/part-of: bao-application
+
+# Database configuration
+database:
+  enabled: true
+  postgres:
+    image:
+      repository: postgres
+      tag: "15"
+      pullPolicy: IfNotPresent
+    auth:
+      postgresPassword: "changeme"
+      database: "bao_db"
+      username: "bao_user"
+    persistence:
+      enabled: true
+      size: 10Gi
+    resources:
+      requests:
+        cpu: "0.3"
+        memory: "512Mi"
+      limits:
+        cpu: "0.5"
+        memory: "1Gi"
+
+  pgpool:
+    enabled: true
+    image:
+      repository: bitnami/pgpool
+      tag: "4.4"
+    replicaCount: 1
+
+# Grafana OTEL LGTM configuration
+grafana:
+  enabled: true
+  image:
+    repository: grafana/otel-lgtm
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  ports:
+    grafana: 3000
+    otel_grpc: 4317
+    otel_http: 4318
+  auth:
+    adminUser: "admin"
+    adminPassword: "changeme"
+  config:
+    enableLogsGrafana: "true"
+    enableLogsLoki: "true"
+    enableLogsPrometheus: "false"
+    enableLogsTempo: "false"
+    enableLogsPyroscope: "false"
+    enableLogsOtelcol: "true"
+    serverRootUrl: "http://localhost:3000/"
+    serverDomain: "localhost"
+  persistence:
+    enabled: true
+    size: 5Gi
+  resources:
+    requests:
+      cpu: "0.3"
+      memory: "500Mi"
+    limits:
+      cpu: "0.5"
+      memory: "1Gi"
+  service:
+    type: ClusterIP
+    # nodePort chỉ cần khi service type là NodePort
+    # Với ClusterIP + Ingress thì không cần nodePort
+    ports:
+      grafana: 3000
+      otel_grpc: 4317
+      otel_http: 4318
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /
+    hosts:
+      - host: grafana-staging.bao.local  # Sẽ override bằng values-{env}.yaml
+        paths:
+          - path: /
+            pathType: Prefix
+
+# Message Queue configuration (RabbitMQ)
+messageQueue:
+  enabled: true
+  type: rabbitmq
+  rabbitmq:
+    image:
+      repository: rabbitmq
+      tag: "3.12-management-alpine"
+      pullPolicy: IfNotPresent
+    auth:
+      username: "admin"
+      password: "changeme"
+      erlangCookie: "changeme"
+    config:
+      defaultVhost: "/"
+      vmMemoryHighWatermark: "0.4"
+      diskFreeLimit: "2GB"
+      extraEnvVars: {}
+        # Add any additional environment variables here
+        # RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbit log_levels [{connection,error},{default,info}]"
+    persistence:
+      enabled: true
+      size: 5Gi
+    resources:
+      requests:
+        cpu: "0.2"
+        memory: "256Mi"
+      limits:
+        cpu: "0.4"
+        memory: "512Mi"
+    management:
+      enabled: true
+  service:
+    type: ClusterIP
+    ports:
+      amqp: 5672
+      management: 15672
+    # nodePort configuration (only used when service.type is NodePort)
+    # For ClusterIP, nodePorts are not needed
+    nodePorts:
+      amqp: 30672
+      management: 30673

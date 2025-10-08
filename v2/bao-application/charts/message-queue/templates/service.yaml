@@ -1,0 +1,31 @@
+{{- if .Values.messageQueue.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-service
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: rabbitmq-service
+    {{- include "bao-application.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.messageQueue.service.type }}
+  ports:
+    - port: {{ .Values.messageQueue.service.ports.amqp }}
+      targetPort: 5672
+      protocol: TCP
+      name: amqp
+      {{- if and (eq .Values.messageQueue.service.type "NodePort") .Values.messageQueue.service.nodePorts.amqp }}
+      nodePort: {{ .Values.messageQueue.service.nodePorts.amqp }}
+      {{- end }}
+    {{- if .Values.messageQueue.rabbitmq.management.enabled }}
+    - port: {{ .Values.messageQueue.service.ports.management }}
+      targetPort: 15672
+      protocol: TCP
+      name: management
+      {{- if and (eq .Values.messageQueue.service.type "NodePort") .Values.messageQueue.service.nodePorts.management }}
+      nodePort: {{ .Values.messageQueue.service.nodePorts.management }}
+      {{- end }}
+    {{- end }}
+  selector:
+    app: rabbitmq-service
+{{- end }}

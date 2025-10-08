@@ -1,0 +1,16 @@
+apiVersion: v2
+name: grafana
+description: A Helm chart for Grafana OTEL LGTM stack
+type: application
+version: 0.1.0
+appVersion: "latest"
+
+keywords:
+  - observability
+  - grafana
+  - otel
+  - monitoring
+
+maintainers:
+  - name: Gauas
+    email: quocbao.job106204@gmail.com
