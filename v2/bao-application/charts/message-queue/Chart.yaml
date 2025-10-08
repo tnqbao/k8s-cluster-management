@@ -1,0 +1,15 @@
+apiVersion: v2
+name: message-queue
+description: A Helm chart for RabbitMQ message queue
+type: application
+version: 0.1.0
+appVersion: "3.12"
+
+keywords:
+  - message-queue
+  - rabbitmq
+  - messaging
+
+maintainers:
+  - name: Gauas
+    email: quocbao.job106204@gmail.com

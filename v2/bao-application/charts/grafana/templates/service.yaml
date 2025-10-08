@@ -1,0 +1,28 @@
+{{- if .Values.grafana.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-service
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: grafana-otel-lgtm-service
+    {{- include "bao-application.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.grafana.service.type }}
+  ports:
+    - port: {{ .Values.grafana.service.ports.grafana }}
+      targetPort: {{ .Values.grafana.ports.grafana }}
+      protocol: TCP
+      name: grafana
+    - port: {{ .Values.grafana.service.ports.otel_grpc }}
+      targetPort: {{ .Values.grafana.ports.otel_grpc }}
+      protocol: TCP
+      name: otel-grpc
+    - port: {{ .Values.grafana.service.ports.otel_http }}
+      targetPort: {{ .Values.grafana.ports.otel_http }}
+      protocol: TCP
+      name: otel-http
+  selector:
+    app: grafana-otel-lgtm-service
+{{- end }}
+

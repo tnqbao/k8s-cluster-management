@@ -1,0 +1,67 @@
+{{- if .Values.messageQueue.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq-deployment
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: rabbitmq-service
+    {{- include "bao-application.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq-service
+  template:
+    metadata:
+      labels:
+        app: rabbitmq-service
+    spec:
+      containers:
+        - name: rabbitmq
+          image: {{ .Values.messageQueue.rabbitmq.image.repository }}:{{ .Values.messageQueue.rabbitmq.image.tag }}
+          imagePullPolicy: {{ .Values.messageQueue.rabbitmq.image.pullPolicy }}
+          ports:
+            - containerPort: 5672
+              name: amqp
+            {{- if .Values.messageQueue.rabbitmq.management.enabled }}
+            - containerPort: 15672
+              name: management
+            {{- end }}
+          envFrom:
+            - configMapRef:
+                name: rabbitmq-config
+            - secretRef:
+                name: rabbitmq-secret
+          resources:
+            {{- toYaml .Values.messageQueue.rabbitmq.resources | nindent 12 }}
+          volumeMounts:
+            {{- if .Values.messageQueue.rabbitmq.persistence.enabled }}
+            - name: rabbitmq-data
+              mountPath: /var/lib/rabbitmq
+            {{- end }}
+          readinessProbe:
+            exec:
+              command:
+                - rabbitmq-diagnostics
+                - -q
+                - ping
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+                - rabbitmq-diagnostics
+                - -q
+                - status
+            initialDelaySeconds: 60
+            periodSeconds: 60
+            timeoutSeconds: 15
+      volumes:
+        {{- if .Values.messageQueue.rabbitmq.persistence.enabled }}
+        - name: rabbitmq-data
+          persistentVolumeClaim:
+            claimName: rabbitmq-pvc
+        {{- end }}
+{{- end }}
