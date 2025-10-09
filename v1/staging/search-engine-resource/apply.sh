@@ -1,5 +1,7 @@
-#!/bin/bash
+#!/usr/bin/bash
 
+set -e
+source .env
 # Apply environment variable substitution
 ./apply_envsubst.sh
 
