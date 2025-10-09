@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bao-meilisearch-${DEPLOY_ENV}-config
+  namespace: bao-${DEPLOY_ENV}-env
+data:
+  MEILI_ENV: "${MEILI_ENV}"

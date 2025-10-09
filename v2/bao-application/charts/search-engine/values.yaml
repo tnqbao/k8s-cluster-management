@@ -1,0 +1,28 @@
+# Default values for search-engine.
+replicaCount: 1
+
+image:
+  repository: getmeili/meilisearch
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 7700
+
+meilisearch:
+  env: "production"
+  masterKey: ""
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+
+namespace: bao-staging-env

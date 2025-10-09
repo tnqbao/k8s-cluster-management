@@ -5,6 +5,10 @@ type: application
 version: 0.1.0
 appVersion: "1.0.0"
 
+maintainers:
+  - name: Gauas
+    email: quocbao.job106204@gmail.com
+
 dependencies:
   - name: database
     version: "0.1.0"
@@ -15,6 +19,9 @@ dependencies:
   - name: message-queue
     version: "0.1.0"
     repository: "file://./charts/message-queue"
+  - name: search-engine
+    version: "0.1.0"
+    repository: "file://./charts/search-engine"
 
 keywords:
   - microservices
@@ -22,10 +29,6 @@ keywords:
   - observability
   - database
   - message-queue
-
-maintainers:
-  - name: Bao Team
-    email: team@bao.com
 
 sources:
   - https://github.com/bao/k8s-cluster-management

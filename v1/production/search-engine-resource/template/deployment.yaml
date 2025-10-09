@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bao-meilisearch
+  namespace: bao-${DEPLOY_ENV}-env
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: meilisearch-service
+  template:
+    metadata:
+      labels:
+        app: meilisearch-service
+    spec:
+      containers:
+        - name: meilisearch-service
+          image: getmeili/meilisearch:latest
+          ports:
+            - containerPort: 7700
+          envFrom:
+            - configMapRef:
+                name: bao-meilisearch-${DEPLOY_ENV}-config
+            - secretRef:
+                name: bao-meilisearch-${DEPLOY_ENV}-secret
+          resources:
+            requests:
+              cpu: "0.2"
+              memory: "256Mi"
+            limits:
+              cpu: "0.5"
+              memory: "512Mi"
