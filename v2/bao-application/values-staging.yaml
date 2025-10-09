@@ -1,0 +1,71 @@
+# Database configuration for staging
+database:
+  postgres:
+    auth:
+      postgresPassword: "${POSTGRES_PASSWORD}"
+      database: "${POSTGRES_DB}"
+      username: "${POSTGRES_USER}"
+    persistence:
+      size: 5Gi  # Smaller for staging
+    resources:
+      requests:
+        cpu: "0.2"
+        memory: "256Mi"
+      limits:
+        cpu: "0.3"
+        memory: "512Mi"
+  pgpool:
+    backendNodes: "${PGPOOL_BACKEND_NODES}"
+
+# Grafana configuration for staging
+grafana:
+  auth:
+    adminUser: "${GF_SECURITY_ADMIN_USER}"
+    adminPassword: "${GF_SECURITY_ADMIN_PASSWORD}"
+  config:
+    enableLogsGrafana: "${ENABLE_LOGS_GRAFANA}"
+    enableLogsLoki: "${ENABLE_LOGS_LOKI}"
+    enableLogsPrometheus: "${ENABLE_LOGS_PROMETHEUS}"
+    enableLogsTempo: "${ENABLE_LOGS_TEMPO}"
+    enableLogsPyroscope: "${ENABLE_LOGS_PYROSCOPE}"
+    enableLogsOtelcol: "${ENABLE_LOGS_OTELCOL}"
+    serverRootUrl: "${GF_SERVER_ROOT_URL}"
+    serverDomain: "${GF_SERVER_DOMAIN}"
+  persistence:
+    size: 2Gi  # Smaller for staging
+  resources:
+    requests:
+      cpu: "0.2"
+      memory: "256Mi"
+    limits:
+      cpu: "0.3"
+      memory: "512Mi"
+  ingress:
+    hosts:
+      - host: "${DOMAIN_NAME}"
+        paths:
+          - path: /
+            pathType: Prefix
+
+# Message Queue configuration for staging
+messageQueue:
+  rabbitmq:
+    auth:
+      username: "${RABBITMQ_DEFAULT_USER}"
+      password: "${RABBITMQ_DEFAULT_PASS}"
+      erlangCookie: "${RABBITMQ_ERLANG_COOKIE}"
+    config:
+      defaultVhost: "/"
+      vmMemoryHighWatermark: "0.4"
+      diskFreeLimit: "1GB"
+      extraEnvVars:
+        RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbit log_levels [{connection,info},{default,info}]"
+    persistence:
+      size: 2Gi  # Smaller for staging
+    resources:
+      requests:
+        cpu: "0.1"
+        memory: "128Mi"
+      limits:
+        cpu: "0.2"
+        memory: "256Mi"

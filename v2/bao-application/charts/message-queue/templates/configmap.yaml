@@ -1,0 +1,22 @@
+{{- if .Values.messageQueue.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-config
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: rabbitmq-service
+    {{- include "bao-application.labels" . | nindent 4 }}
+data:
+  RABBITMQ_DEFAULT_VHOST: {{ .Values.messageQueue.rabbitmq.config.defaultVhost | quote }}
+  RABBITMQ_VM_MEMORY_HIGH_WATERMARK: {{ .Values.messageQueue.rabbitmq.config.vmMemoryHighWatermark | quote }}
+  RABBITMQ_DISK_FREE_LIMIT: {{ .Values.messageQueue.rabbitmq.config.diskFreeLimit | quote }}
+  DEPLOY_ENV: {{ .Values.global.environment | quote }}
+  {{- if .Values.messageQueue.rabbitmq.management.enabled }}
+  RABBITMQ_MANAGEMENT_ALLOW_WEB_ACCESS: "true"
+  {{- end }}
+  {{- range $key, $value := .Values.messageQueue.rabbitmq.config.extraEnvVars }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+{{- end }}
+
