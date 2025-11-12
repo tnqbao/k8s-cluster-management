@@ -37,20 +37,14 @@ spec:
               cpu: "1"
               memory: "2Gi"
           livenessProbe:
-            exec:
-              command:
-                - /bin/sh
-                - -c
-                - dragonfly-cli -a $(DRAGONFLY_PASSWORD) ping | grep PONG
+            tcpSocket:
+              port: 6379
             initialDelaySeconds: 20
             periodSeconds: 30
             timeoutSeconds: 5
           readinessProbe:
-            exec:
-              command:
-                - /bin/sh
-                - -c
-                - dragonfly-cli -a $(DRAGONFLY_PASSWORD) ping | grep PONG
+            tcpSocket:
+              port: 6379
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
