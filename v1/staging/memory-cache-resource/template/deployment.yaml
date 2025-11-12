@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bao-dragonfly-deployment
+  namespace: bao-${DEPLOY_ENV}-env
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dragonfly-service
+  template:
+    metadata:
+      labels:
+        app: dragonfly-service
+    spec:
+      containers:
+        - name: dragonfly
+          image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
+          ports:
+            - containerPort: 6379
+              name: dragonfly
+          args:
+            - --requirepass=$(DRAGONFLY_PASSWORD)
+            - --maxmemory=2gb
+            #--dir, --dbfilename, --save_schedule
+            - --cache_mode=true
+          envFrom:
+            - configMapRef:
+                name: bao-dragonfly-${DEPLOY_ENV}-config
+            - secretRef:
+                name: bao-dragonfly-${DEPLOY_ENV}-secret
+          resources:
+            requests:
+              cpu: "0.25"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - dragonfly-cli -a $(DRAGONFLY_PASSWORD) ping | grep PONG
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - dragonfly-cli -a $(DRAGONFLY_PASSWORD) ping | grep PONG
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
