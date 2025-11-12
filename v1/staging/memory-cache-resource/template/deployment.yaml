@@ -20,7 +20,7 @@ spec:
             - containerPort: 6379
               name: dragonfly
           args:
-            - --requirepass=$(DRAGONFLY_PASSWORD)
+            - --requirepass=${DRAGONFLY_PASSWORD}
             - --maxmemory=2gb
             #--dir, --dbfilename, --save_schedule
             - --cache_mode=true
