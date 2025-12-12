@@ -12,5 +12,5 @@ spec:
   storageClassName: minio-local
   resources:
     requests:
-      storage: 180Gi
+      storage: 150Gi
 
