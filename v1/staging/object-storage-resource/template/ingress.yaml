@@ -1,0 +1,57 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gau-minio-ingress
+  namespace: bao-${DEPLOY_ENV}-env
+  labels:
+    app: bao-platform
+    env: ${DEPLOY_ENV}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  rules:
+    - host: "${API_DOMAIN}"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gau-minio-service
+                port:
+                  number: 9000
+
+    - host: "${DASHBOARD_DOMAIN}"
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: gau-minio-service
+                port:
+                  number: 9001
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gau-minio-web-hosting-ingress
+  namespace: bao-${DEPLOY_ENV}-env
+  labels:
+    app: bao-platform
+    env: ${DEPLOY_ENV}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  rules:
+    # Access: <bucket>.${WEB_HOSTING_BASE_DOMAIN} -> nginx proxy -> minio
+    - host: "*.${WEB_HOSTING_BASE_DOMAIN}"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gau-minio-nginx-proxy-service
+                port:
+                  number: 80
