@@ -35,7 +35,7 @@ data:
         log_format main '$remote_addr - $remote_user [$time_local] "$request" '
                         '$status $body_bytes_sent "$http_referer" '
                         '"$http_user_agent" "$http_x_forwarded_for" '
-                        'bucket=$bucket';
+                        'bucket="$bucket" uri="$uri" target="$target_path"';
 
         access_log /var/log/nginx/access.log main;
 
@@ -46,22 +46,73 @@ data:
         types_hash_max_size 2048;
         client_max_body_size 0;
 
+        # MinIO upstream - path-style bucket access
         upstream minio_s3 {
             server gau-minio-service:9000;
+            keepalive 32;
         }
 
+        # Main server block: subdomain routing -> path-style bucket
+        # Example: test.web.gauas.online/login -> /test/login (MinIO path-style)
         server {
             listen 8080;
             server_name ~^(?<bucket>.+)\.${WEB_HOSTING_BASE_DOMAIN}$;
 
+            # Health check endpoint
             location /health {
                 access_log off;
                 return 200 'OK';
                 add_header Content-Type text/plain;
             }
 
-            location / {
-                proxy_set_header Host "${WEB_HOSTING_BASE_DOMAIN}";
+            # Rule 1: Root "/" -> serve /bucket/index.html
+            # Example: test.web.gauas.online/ -> /test/index.html
+            location = / {
+                proxy_set_header Host $http_host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+
+                rewrite ^ /$bucket/index.html break;
+
+                proxy_pass http://minio_s3;
+                proxy_http_version 1.1;
+                proxy_set_header Connection "";
+
+                proxy_connect_timeout 300;
+                proxy_send_timeout 300;
+                proxy_read_timeout 300;
+
+                proxy_buffering off;
+                proxy_request_buffering off;
+            }
+
+            # Rule 2: Folder with trailing slash -> serve /bucket/folder/index.html
+            # Example: test.web.gauas.online/login/ -> /test/login/index.html
+            location ~ ^/(.+)/$ {
+                proxy_set_header Host $http_host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+
+                rewrite ^/(.+)/$ /$bucket/$1/index.html break;
+
+                proxy_pass http://minio_s3;
+                proxy_http_version 1.1;
+                proxy_set_header Connection "";
+
+                proxy_connect_timeout 300;
+                proxy_send_timeout 300;
+                proxy_read_timeout 300;
+
+                proxy_buffering off;
+                proxy_request_buffering off;
+            }
+
+            # Rule 3: Static assets - enable caching
+            # Example: test.web.gauas.online/style.css -> /test/style.css
+            location ~* \.(css|js|json|map|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|webp|mp4|webm|pdf|xml|txt)$ {
+                proxy_set_header Host $http_host;
                 proxy_set_header X-Real-IP $remote_addr;
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                 proxy_set_header X-Forwarded-Proto $scheme;
@@ -78,9 +129,47 @@ data:
 
                 proxy_buffering off;
                 proxy_request_buffering off;
+
+                # Cache static assets for 7 days
+                expires 7d;
+                add_header Cache-Control "public, immutable";
+            }
+
+            # Rule 4: URL without extension -> fallback to index.html (SPA routing)
+            # Example: test.web.gauas.online/login -> /test/login/index.html
+            # Example: test.web.gauas.online/dashboard/settings -> /test/dashboard/settings/index.html
+            location / {
+                proxy_set_header Host $http_host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+
+                # Check if URI has no extension (no dot after last slash)
+                # If no extension -> assume it's a route -> append /index.html
+                if ($uri !~ \.[^/]+$) {
+                    rewrite ^/(.*)$ /$bucket/$1/index.html break;
+                }
+
+                # Otherwise, serve the actual file
+                rewrite ^/(.*)$ /$bucket/$1 break;
+
+                proxy_pass http://minio_s3;
+                proxy_http_version 1.1;
+                proxy_set_header Connection "";
+
+                proxy_connect_timeout 300;
+                proxy_send_timeout 300;
+                proxy_read_timeout 300;
+
+                proxy_buffering off;
+                proxy_request_buffering off;
+
+                # Disable cache for HTML files to ensure fresh content
+                add_header Cache-Control "no-cache, no-store, must-revalidate";
             }
         }
 
+        # Default server block: reject requests without bucket subdomain
         server {
             listen 8080 default_server;
             server_name _;
@@ -92,7 +181,7 @@ data:
             }
 
             location / {
-                return 404 'Bucket not specified';
+                return 404 'Bucket not specified in subdomain';
                 add_header Content-Type text/plain;
             }
         }
