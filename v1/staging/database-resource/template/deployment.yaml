@@ -48,7 +48,7 @@ metadata:
   name: pgpool-deployment
   namespace: bao-${DEPLOY_ENV}-env
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: pgpool-service
