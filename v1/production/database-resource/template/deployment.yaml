@@ -55,7 +55,7 @@ spec:
     spec:
       containers:
         - name: pgpool
-          image: bitnami/pgpool:latest
+          image: soldevelo/pgpool:latest
           envFrom:
             - configMapRef:
                 name: bao-${DEPLOY_ENV}-config
